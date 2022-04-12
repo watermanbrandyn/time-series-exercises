@@ -34,31 +34,38 @@ def api_gather(domain, endpoint, target, use_cache=True):
     # Return dataframe
     return df
 
-# # Creation of our domain for use with api_gather()
-# domain = 'https://python.zgulde.net'
+# Creation of our domain for use with api_gather()
+domain = 'https://python.zgulde.net'
 
-# # Creation of our endpoints and targets for use with api_gather()
-# # These would be called with our function to acquire the three dataframes
+# Creation of our endpoints and targets for use with api_gather()
+# These would be called with our function to acquire the three dataframes
 
-# endpoint_items = '/api/v1/items'
-# target_items = 'items'
+endpoint_items = '/api/v1/items'
+target_items = 'items'
 
-# endpoint_stores = '/api/v1/stores'
-# target_stores = 'stores'
+endpoint_stores = '/api/v1/stores'
+target_stores = 'stores'
 
-# endpoint_sales = '/api/v1/sales'
-# target_sales = 'sales'
+endpoint_sales = '/api/v1/sales'
+target_sales = 'sales'
 
-# Merging the three dataframes from API
-def merge_dfs(items, stores, sales):
+# Acquiring and merging all three dataframes from API
+def acquire_merge_dfs():
     '''
-    This function takes in our three dataframes and merges them on the proper columns using inner joins. Returns one large dataframe.
+    This function acquires our three dataframes and merges them on the proper columns using inner joins. Returns one large dataframe.
     '''
-    df = pd.merge(items, sales, how='inner', left_on='item_id', right_on='item')
-    df = pd.merge(df, stores, how='inner', left_on='store', right_on='store_id')
+    # Acquisition of our three dataframes
+    items = api_gather(domain, endpoint_items, target_items)
+    stores = api_gather(domain, endpoint_stores, target_stores)
+    sales = api_gather(domain, endpoint_sales, target_sales) 
+    # Rename the store and item columns in sales for ease and posterity
+    sales = sales.rename(columns={'store': 'store_id', 'item': 'item_id'})
+    # Merging the dataframes on the store_id and item_id columns
+    df = pd.merge(sales, items, how='left', on='item_id')
+    df = pd.merge(df, stores, how='left', on='store_id')
     return df
 
-
+# Germany OPSD acquire
 def acquire_energy():
     '''
     This function acquires the Open Power Systems Data (OPSD) for Germany. (2006-2017)
